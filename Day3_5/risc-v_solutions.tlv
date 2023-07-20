@@ -51,6 +51,7 @@
                        ($instr[6:2] == 5'b11001);
          
          $is_s_instr = $instr[6:2] ==? 5'b0100x;
+         
          $is_b_instr = $instr[6:2] == 5'b11000;
          $is_j_instr = $instr[6:2] == 5'b11011;
          $is_u_instr = $instr[6:2] ==? 5'b0x101;
@@ -81,6 +82,15 @@
             $rd[4:0] = $instr[11:7];
          $opcode[6:0] = $instr[6:0];
          
+         $dec_bits[10:0] = {$funct7[5],$funct3,$opcode};
+         $is_beq = $dec_bits ==? 11'bx_000_1100011;
+         $is_bne = $dec_bits ==? 11'bx_001_1100011;
+         $is_blt = $dec_bits ==? 11'bx_100_1100011;
+         $is_bge = $dec_bits ==? 11'bx_101_1100011;
+         $is_bltu = $dec_bits ==? 11'bx_110_1100011;
+         $is_bgeu = $dec_bits ==? 11'bx_111_1100011;
+         $is_addi = $dec_bits ==? 11'bx_000_0010011;
+         $is_add = $dec_bits == 11'b0_000_0110011;
          
          
          
@@ -102,7 +112,7 @@
    |cpu
       m4+imem(@1)    // Args: (read stage)
       //m4+rf(@1, @1)  // Args: (read stage, write stage) - if equal, no register bypass is required
-      m4+dmem(@4)    // Args: (read/write stage)
+      //m4+dmem(@4)    // Args: (read/write stage)
       //m4+myth_fpga(@0)  // Uncomment to run on fpga
    m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic. @4 would work for all labs.
 \SV
