@@ -50,7 +50,7 @@
                        ($instr[6:2] ==? 5'b001x0) ||
                        ($instr[6:2] == 5'b11001);
          
-         $is_s_instr = $instr[6:2] ==? 5b'0100x;
+         $is_s_instr = $instr[6:2] ==? 5'b0100x;
          $is_b_instr = $instr[6:2] == 5'b11000;
          $is_j_instr = $instr[6:2] == 5'b11011;
          $is_u_instr = $instr[6:2] ==? 5'b0x101;
@@ -64,17 +64,26 @@
                       $is_u_instr ? { $instr[31:12], 12'b0} :
                       $is_j_instr ? { {10{$instr[31]}}, $instr[19:12],$instr[20],$instr[30:21], 1'b0} : 32'b0;
          
-         $rs2[4:0] = $instr[24:20];
-         $funct7[6:0] = $instr[31:25];
-         $funct3[2:0] = $instr[14:12];
-         $rs1[4:0] = $instr[19:15];
-         $rd[4:0] = $instr[11:7];
+         $rs2_valid = $is_r_instr || $is_s_instr || $is_b_instr;
+         ?$rs2_valid
+            $rs2[4:0] = $instr[24:20];
+         $funct7_valid = $is_r_instr;
+         ?$funct7_valid
+            $funct7[6:0] = $instr[31:25];
+         $funct3_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+         ?$funct3_valid
+            $funct3[2:0] = $instr[14:12];
+         $rs1_valid = $is_r_instr || $is_i_instr || $is_s_instr || $is_b_instr;
+         ?$rs1_valid
+            $rs1[4:0] = $instr[19:15];
+         $rd_valid = $is_r_instr || $is_i_instr || $is_u_instr || $is_j_instr;
+         ?$rd_valid
+            $rd[4:0] = $instr[11:7];
          $opcode[6:0] = $instr[6:0];
          
          
          
          
-      
 
       // Note: Because of the magic we are using for visualisation, if visualisation is enabled below,
       //       be sure to avoid having unassigned signals (which you might be using for random inputs)
@@ -93,7 +102,7 @@
    |cpu
       m4+imem(@1)    // Args: (read stage)
       //m4+rf(@1, @1)  // Args: (read stage, write stage) - if equal, no register bypass is required
-      //m4+dmem(@4)    // Args: (read/write stage)
+      m4+dmem(@4)    // Args: (read/write stage)
       //m4+myth_fpga(@0)  // Uncomment to run on fpga
    m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic. @4 would work for all labs.
 \SV
