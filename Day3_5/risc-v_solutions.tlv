@@ -45,7 +45,7 @@
          $imem_rd_en = $reset;
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
       @1
-         $instr[31:0] =  $imem_rd_data[31:0] ;
+         $instr[31:0] =  $imem_rd_data[31:0];
          $is_i_instr = ($instr[6:2] ==? 5'b0000x) ||
                        ($instr[6:2] ==? 5'b001x0) ||
                        ($instr[6:2] == 5'b11001);
@@ -92,7 +92,10 @@
          $is_addi = $dec_bits ==? 11'bx_000_0010011;
          $is_add = $dec_bits == 11'b0_000_0110011;
          
-         
+         $rf_rd_en1 = $rs1_valid;
+         $rf_rd_index1[4:0] = $rs1;
+         $rf_rd_en2 = $rs2_valid;
+         $rf_rd_index2[4:0] = $rs2;
          
 
       // Note: Because of the magic we are using for visualisation, if visualisation is enabled below,
@@ -111,7 +114,7 @@
    //  o CPU visualization
    |cpu
       m4+imem(@1)    // Args: (read stage)
-      //m4+rf(@1, @1)  // Args: (read stage, write stage) - if equal, no register bypass is required
+      m4+rf(@1, @1)  // Args: (read stage, write stage) - if equal, no register bypass is required
       //m4+dmem(@4)    // Args: (read/write stage)
       //m4+myth_fpga(@0)  // Uncomment to run on fpga
    m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic. @4 would work for all labs.
