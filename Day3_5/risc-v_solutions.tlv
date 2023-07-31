@@ -42,14 +42,14 @@
          $reset = *reset;
          $start = !$reset && >>1$reset;
          $pc[31:0] = >>1$reset ? 0 :
-                     >>1$taken_br ? >>1$br_tgt_pc :
-                     >>1$pc[31:0] + 32'd4;
+                     >>3$valid_taken_br ? >>3$br_tgt_pc : >>3$inc_pc;
          $valid = $reset ? 0 : $start ? 1 : >>3$valid ? 1 : 0;
          
          $imem_rd_en = $reset;
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
       @1
          $instr[31:0] =  $imem_rd_data[31:0];
+         $inc_pc[31:0] = $pc[31:0] + 32'd4;
          $is_i_instr = ($instr[6:2] ==? 5'b0000x) ||
                        ($instr[6:2] ==? 5'b001x0) ||
                        ($instr[6:2] == 5'b11001);
@@ -104,7 +104,7 @@
          $src1_value[31:0] = $rf_rd_data1;
          $src2_value[31:0] = $rf_rd_data2;
          
-         $rf_wr_en = $rd_valid && $rd != 5'b0;
+         $rf_wr_en = $rd_valid && $rd != 5'b0 && $valid;
          $rf_wr_index[4:0] = $rd;
          $rf_wr_data[31:0] = $result;
          $result[31:0] = $is_addi ? $src1_value + $imm :
@@ -117,7 +117,8 @@
                      $is_bltu ? ($src1_value < $src2_value) :
                      $is_bgeu ? ($src1_value >= $src2_value) :
                      1'b0;
-         
+      @3
+         $valid_taken_br = $valid && $taken_br;
          
          
 
