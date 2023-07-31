@@ -47,6 +47,7 @@
          
          $imem_rd_en = $reset;
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
+         `BOGUS_USE($start)
       @1
          $instr[31:0] =  $imem_rd_data[31:0];
          $inc_pc[31:0] = $pc[31:0] + 32'd4;
@@ -122,7 +123,10 @@
          $is_or      =  $dec_bits ==? 11'b0_110_0110011 ;
          $is_and     =  $dec_bits ==? 11'b0_111_0110011 ;
          
-         
+         `BOGUS_USE($is_lui $is_auipc $is_jal $is_jalr)
+         `BOGUS_USE($is_load $is_sb $is_sh $is_sw)
+         `BOGUS_USE($is_slti $is_sltiu $is_xori $is_ori $is_andi $is_slli $is_srli $is_srai)
+         `BOGUS_USE($is_sub $is_sll $is_slt $is_sltu $is_xor $is_srl $is_sra $is_or $is_and)
          
          
       @2
@@ -141,7 +145,29 @@
          $rf_wr_data[31:0] = $result;
          $result[31:0] = $is_addi ? $src1_value + $imm :
                          $is_add ? $src1_value + $src2_value :
+                         $is_andi ?  $src1_value & $imm :
+                         $is_ori ?  $src1_value | $imm :
+                         $is_xori ?  $src1_value ^ $imm :
+                         $is_slli ?  $src1_value << $imm[5:0]  :
+                         $is_srli ?  $src1_value >> $imm[5:0]  :
+                         $is_and ?  $src1_value & $src2_value :
+                         $is_or ?  $src1_value | $src2_value :
+                         $is_xor ?  $src1_value ^ $src2_value :
+                         $is_sub ?  $src1_value - $src2_value :
+                         $is_sll ?  $src1_value << $src2_value[4:0] :
+                         $is_srl ?  $src1_value >> $src2_value[4:0] :
+                         //$is_sltu ?  $sltu_rslt :
+                         //$is_sltiu ?  $sltiu_rslt :
+                         $is_lui ?  {$imm[31:12], 12'b0} :
+                         $is_auipc ?  $pc + $imm :
+                         $is_jal ?  $pc + 32'd4 :
+                         $is_jalr ?  $pc + 32'd4 :
+                         $is_srai ?  {{32{$src1_value[31]}}, $src1_value} >> $imm[4:0] :
+                         //$is_slt ? (($src1_value[31] == $src2_value[31]) ? $sltu_rslt : {31'b0, $src1_value[31]}) :
+                         //$is_slti ? (($src1_value[31] == $imm[31]) ? $sltiu_rslt : {31'b0, $src1_value[31]}) :
+                         $is_sra ? {{32{$src1_value[31]}}, $src1_value} >> $src2_value[4:0] :
                          32'bx;
+                         
          $taken_br = $is_beq ? ($src1_value == $src2_value) :
                      $is_bne ? ($src1_value != $src2_value) :
                      $is_blt ? (($src1_value < $src2_value) ^ ($src1_value[31] != $src2_value[31])) :
