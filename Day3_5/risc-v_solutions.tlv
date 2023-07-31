@@ -42,8 +42,8 @@
          $reset = *reset;
          $start = !$reset && >>1$reset;
          $pc[31:0] = >>1$reset ? 0 :
-                     >>3$valid_taken_br ? >>3$br_tgt_pc : >>3$inc_pc;
-         $valid = $reset ? 0 : $start ? 1 : >>3$valid ? 1 : 0;
+                     >>3$valid_taken_br ? >>3$br_tgt_pc : >>1$inc_pc;
+         //$valid = $reset ? 0 : $start ? 1 : >>3$valid ? 1 : 0;
          
          $imem_rd_en = $reset;
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
@@ -124,6 +124,7 @@
                      $is_bltu ? ($src1_value < $src2_value) :
                      $is_bgeu ? ($src1_value >= $src2_value) :
                      1'b0;
+         $valid = !>>1$valid_taken_br && !>>2$valid_taken_br;
          $valid_taken_br = $valid && $taken_br;
       //@4
          
